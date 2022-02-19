@@ -10,5 +10,4 @@ public class SpringBootReactMysqlApplication {
 
 		SpringApplication.run(SpringBootReactMysqlApplication.class, args);
 	}
-
 }

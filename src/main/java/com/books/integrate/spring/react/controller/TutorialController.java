@@ -64,7 +64,12 @@ public class TutorialController {
 	public ResponseEntity<Tutorial> createTutorial(@RequestBody Tutorial tutorial) {
 		try {
 			Tutorial _tutorial = tutorialRepository
-					.save(new Tutorial(tutorial.getTitle(), tutorial.getDescription(),  false));
+					.save(new Tutorial(
+							tutorial.getTitle(),
+							tutorial.getDescription(),
+							tutorial.isPublished(),
+							tutorial.getPrice()
+					));
 			return new ResponseEntity<>(_tutorial, HttpStatus.CREATED);
 		} catch (Exception e) {
 			return new ResponseEntity<>(null, HttpStatus.EXPECTATION_FAILED);
@@ -86,6 +91,23 @@ public class TutorialController {
 		}
 	}
 
+	@PutMapping("/update/{title}")
+	public ResponseEntity<List<Tutorial>> updateTutorial(@PathVariable("title") String title, @RequestBody Tutorial tutorial) {
+		List<Tutorial> tutorialList = tutorialRepository.findByTitleContaining(title);
+
+		if(!tutorialList.isEmpty()){
+			for(Tutorial tutorialField: tutorialList){
+				tutorialField.setTitle(tutorial.getTitle());
+				tutorialField.setDescription(tutorial.getDescription());
+				tutorialField.setPublished(tutorial.isPublished());
+				tutorialField.setPrice(tutorial.getPrice());
+			}
+			return new ResponseEntity<>(tutorialRepository.saveAll(tutorialList), HttpStatus.OK);
+		}else{
+			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+		}
+	}
+
 //HttpStatus
 	@DeleteMapping("/tutorials/{id}")
 	public ResponseEntity<String> deleteTutorial(@PathVariable("id") long id) {
@@ -96,6 +118,19 @@ public class TutorialController {
 			return new ResponseEntity<>(HttpStatus.EXPECTATION_FAILED);
 		}
 	}
+
+	@DeleteMapping("/title/{title}")
+	public ResponseEntity<String> deleteTutorial(@PathVariable("title") String title) {
+		try {
+			List<Tutorial> tutorials = tutorialRepository.findByTitleContaining(title);
+			tutorialRepository.deleteAll(tutorials);
+			return new ResponseEntity<>("¡Tutorials DELETE!! ", HttpStatus.NO_CONTENT);
+		} catch (Exception e) {
+			return new ResponseEntity<>(HttpStatus.EXPECTATION_FAILED);
+		}
+	}
+
+
 
 	@DeleteMapping("/tutorials")
 	public ResponseEntity<HttpStatus> deleteAllTutorials() {
@@ -118,6 +153,16 @@ public class TutorialController {
 			}
 			return new ResponseEntity<>(tutorials, HttpStatus.OK);
 		} catch (Exception e) {
+			return new ResponseEntity<>(HttpStatus.EXPECTATION_FAILED);
+		}
+	}
+
+	@GetMapping("/price/{price}")
+	public ResponseEntity<List<Tutorial>> findByPrince(@PathVariable (name = "price") Integer price){
+		try{
+			List<Tutorial> tutorials = tutorialRepository.findByPrice(price);
+			return new ResponseEntity<>(tutorials, HttpStatus.OK);
+		}catch (Exception ignored){
 			return new ResponseEntity<>(HttpStatus.EXPECTATION_FAILED);
 		}
 	}
